@@ -103,7 +103,7 @@ private fun replay(env: Map<String, String>, starttidspunkt: LocalDateTime, dryR
         }
     }
 
-    logger.info("Ferdig!")
+    logger.info("100 % ferdig, $håndtertTotal av $antall håndtert. ${antall - håndtertTotal} gjenstående.")
 }
 
 private fun String.readFile() =
