@@ -25,6 +25,24 @@ spec:
             - mountPath: /var/run/secrets/nais.io/service_user
               name: vault-secrets
               subPath: subpath/var/run/secrets/nais.io/service_user
+            - mountPath: /etc/ssl/certs/ca-certificates.crt
+              name: ca-bundle
+              subPath: ca-bundle.pem
+            - mountPath: /etc/pki/tls/certs/ca-bundle.crt
+              name: ca-bundle
+              subPath: ca-bundle.pem
+            - mountPath: /etc/ssl/ca-bundle.pem
+              name: ca-bundle
+              subPath: ca-bundle.pem
+            - mountPath: /etc/pki/tls/cacert.pem
+              name: ca-bundle
+              subPath: ca-bundle.pem
+            - mountPath: /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
+              name: ca-bundle
+              subPath: ca-bundle.pem
+            - mountPath: /etc/ssl/certs/java/cacerts
+              name: ca-bundle
+              subPath: ca-bundle.jks
           args:
             - dryRun=true
             - starttidspunkt=2020-01-01
@@ -43,6 +61,10 @@ spec:
               value: spedisjon
             - name: VAULT_MOUNTPATH
               value: postgresql/preprod-fss/
+            - name: NAV_TRUSTSTORE_PATH
+              value: /etc/ssl/certs/java/cacerts
+            - name: NAV_TRUSTSTORE_PASSWORD
+              value: changeme
       imagePullSecrets:
         - name: gpr-credentials
       initContainers:
