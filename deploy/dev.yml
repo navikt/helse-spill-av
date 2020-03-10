@@ -27,7 +27,7 @@ spec:
               subPath: subpath/var/run/secrets/nais.io/service_user
           args:
             - dryRun=true
-            - starttidspunkt=2020-01-01T00:00:00
+            - starttidspunkt=2020-01-01
           env:
             - name: VAULT_TOKEN_PATH
               value: /var/run/secrets/nais.io/vault/vault_token

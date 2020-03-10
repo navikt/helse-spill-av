@@ -12,17 +12,36 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.DateTimeParseException
 import kotlin.math.floor
 
 private val logger = LoggerFactory.getLogger("no.nav.helse.SpillAv")
 
 fun main(args: Array<String>) {
     val env = System.getenv()
-    val starttidspunkt = LocalDate.of(2020, 1, 1).atStartOfDay()
-    val dryRun = true
+
+    var dryRun = true
+    var starttidspunkt: LocalDateTime? = null
+
+    val cliArgs = args.associate {
+        val parts = it.split("=", limit = 2)
+        check(parts.size == 2) { "argumenter må angis på formen <key=value>" }
+        parts[0] to parts[1]
+    }
+
+    cliArgs["dryRun"]?.also {
+        dryRun = it.toLowerCase() != "false"
+    }
+
+    starttidspunkt = cliArgs.getValue("starttidspunkt").let {
+        try {
+            LocalDateTime.parse(it)
+        } catch (err: DateTimeParseException) {
+            LocalDate.parse(it).atStartOfDay()
+        }
+    }
 
     logger.info("args: ${args.toList()}")
-
     replay(env, starttidspunkt, dryRun)
 }
 
@@ -53,7 +72,7 @@ private fun replay(env: Map<String, String>, starttidspunkt: LocalDateTime, dryR
 
     var håndtertTotal = 0L
     var meldingerPerOutputCounter = 0L
-    val meldingerPerOutput = antall / 100 // skriv fremdrift ca. 100 ganger, ca. hvert 1 %
+    val meldingerPerOutput = antall / 50 // skriv fremdrift ca. 50 ganger, ca. hvert 2 %
 
     using(sessionOf(dataSource)) { session ->
         session.forEach(queryOf("SELECT * FROM melding where opprettet >= ? ORDER BY opprettet ASC", starttidspunkt)) { row ->
