@@ -74,16 +74,30 @@ private fun replay(env: Map<String, String>, starttidspunkt: LocalDateTime, dryR
     var meldingerPerOutputCounter = 0L
     val meldingerPerOutput = antall / 50 // skriv fremdrift ca. 50 ganger, ca. hvert 2 %
 
-    using(sessionOf(dataSource)) { session ->
-        session.forEach(queryOf("SELECT * FROM melding where opprettet >= ? ORDER BY opprettet ASC", starttidspunkt)) { row ->
-            håndtertTotal += 1
-            meldingerPerOutputCounter += 1
+    while (håndtertTotal < antall) {
+        using(sessionOf(dataSource)) { session ->
+            session.forEach(
+                queryOf(
+                    "SELECT * FROM melding where opprettet >= ? ORDER BY opprettet ASC LIMIT 1000 OFFSET ?",
+                    starttidspunkt,
+                    håndtertTotal
+                )
+            ) { row ->
+                håndtertTotal += 1
+                meldingerPerOutputCounter += 1
 
-            if (!dryRun) producer.send(ProducerRecord(env.getValue("KAFKA_RAPID_TOPIC"), row.string("fnr"), row.string("data")))
+                if (!dryRun) producer.send(
+                    ProducerRecord(
+                        env.getValue("KAFKA_RAPID_TOPIC"),
+                        row.string("fnr"),
+                        row.string("data")
+                    )
+                )
 
-            if (meldingerPerOutputCounter >= meldingerPerOutput) {
-                val donePercent = floor(håndtertTotal/antall.toDouble() * 1000)/10
-                logger.info("$donePercent % ferdig, $håndtertTotal av $antall håndtert. ${antall - håndtertTotal} gjenstående.")
+                if (meldingerPerOutputCounter >= meldingerPerOutput) {
+                    val donePercent = floor(håndtertTotal / antall.toDouble() * 1000) / 10
+                    logger.info("$donePercent % ferdig, $håndtertTotal av $antall håndtert. ${antall - håndtertTotal} gjenstående.")
+                }
             }
         }
     }
