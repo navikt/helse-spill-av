@@ -1,0 +1,90 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: spill-av
+  namespace: tbd
+spec:
+  ttlSecondsAfterFinished: 300
+  backoffLimit: 1
+  template:
+    spec:
+      containers:
+        - name: spill-av
+          image: "docker.pkg.github.com/navikt/helse-spill-av/spill-av:{{version}}"
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 100m
+            limits:
+              memory: 512Mi
+              cpu: 1000m
+          volumeMounts:
+            - mountPath: /var/run/secrets/nais.io/vault
+              name: vault-secrets
+              subPath: subpath/var/run/secrets/nais.io/vault
+            - mountPath: /var/run/secrets/nais.io/service_user
+              name: vault-secrets
+              subPath: subpath/var/run/secrets/nais.io/service_user
+          args:
+            - dryRun=true
+            - starttidspunkt=2020-01-01T00:00:00
+          env:
+            - name: VAULT_TOKEN_PATH
+              value: /var/run/secrets/nais.io/vault/vault_token
+            - name: KAFKA_BOOTSTRAP_SERVERS
+              value: b27apvl00045.preprod.local:8443,b27apvl00046.preprod.local:8443,b27apvl00047.preprod.local:8443
+            - name: KAFKA_RAPID_TOPIC
+              value: helse-rapid-v1
+            - name: DATABASE_HOST
+              value: b27dbvl009.preprod.local
+            - name: DATABASE_PORT
+              value: "5432"
+            - name: DATABASE_NAME
+              value: spedisjon
+            - name: VAULT_MOUNTPATH
+              value: postgresql/preprod-fss/
+      imagePullSecrets:
+        - name: gpr-credentials
+      initContainers:
+        - name: vks-init
+          image: navikt/vault-sidekick:v0.3.10-d122b16
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "1000m"
+          volumeMounts:
+            - mountPath: /var/run/secrets/nais.io/vault
+              name: vault-secrets
+              subPath: subpath/var/run/secrets/nais.io/vault
+            - mountPath: /var/run/secrets/nais.io/service_user
+              name: vault-secrets
+              subPath: subpath/var/run/secrets/nais.io/service_user
+          args:
+            - -v=10
+            - -logtostderr
+            - -vault=https://vault.adeo.no
+            - -one-shot
+            - -save-token=/var/run/secrets/nais.io/vault/vault_token
+            - -cn=secret:serviceuser/data/dev/srvspillav:dir=/var/run/secrets/nais.io/service_user,fmt=flatten
+          env:
+            - name: VAULT_AUTH_METHOD
+              value: kubernetes
+            - name: VAULT_SIDEKICK_ROLE
+              value: spill-av
+            - name: VAULT_K8S_LOGIN_PATH
+              value: auth/kubernetes/preprod/fss/login
+      serviceAccount: podcreator
+      serviceAccountName: podcreator
+      volumes:
+        - name: vault-secrets
+          emptyDir:
+            medium: Memory
+        - name: ca-bundle
+          configMap:
+            defaultMode: 420
+            name: ca-bundle
+      restartPolicy: Never
+
