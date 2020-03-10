@@ -74,8 +74,8 @@ private fun replay(env: Map<String, String>, starttidspunkt: LocalDateTime, dryR
     var meldingerPerOutputCounter = 0L
     val meldingerPerOutput = antall / 50 // skriv fremdrift ca. 50 ganger, ca. hvert 2 %
 
-    while (håndtertTotal < antall) {
-        using(sessionOf(dataSource)) { session ->
+    using(sessionOf(dataSource)) { session ->
+        while (håndtertTotal < antall) {
             session.forEach(
                 queryOf(
                     "SELECT * FROM melding where opprettet >= ? ORDER BY opprettet ASC LIMIT 1000 OFFSET ?",
