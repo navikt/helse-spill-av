@@ -12,6 +12,7 @@ import java.io.File
 import java.io.FileNotFoundException
 import java.time.LocalDate
 import java.time.LocalDateTime
+import kotlin.math.floor
 
 private val logger = LoggerFactory.getLogger("no.nav.helse.SpillAv")
 
@@ -62,7 +63,7 @@ private fun replay(env: Map<String, String>, starttidspunkt: LocalDateTime, dryR
             if (!dryRun) producer.send(ProducerRecord(env.getValue("KAFKA_RAPID_TOPIC"), row.string("fnr"), row.string("data")))
 
             if (meldingerPerOutputCounter >= meldingerPerOutput) {
-                val donePercent = Math.round(håndtertTotal/antall.toDouble() * 100)
+                val donePercent = floor(håndtertTotal/antall.toDouble() * 100)
                 logger.info("$donePercent % ferdig, $håndtertTotal av $antall håndtert. ${antall - håndtertTotal} gjenstående.")
             }
         }
