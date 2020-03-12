@@ -106,7 +106,7 @@ private fun replay(env: Map<String, String>, fraFil: Boolean, starttidspunkt: Lo
     logger.info("100 % ferdig, $håndtertTotal av $antall håndtert. ${antall - håndtertTotal} gjenstående.")
 }
 
-private fun lesMeldingerFraFil() = "/meldinger.txt".readResource()?.lineSequence()?.filter(String::isNotBlank)?.toList() ?: emptyList()
+private fun lesMeldingerFraFil() = "/meldinger.txt".readResource()?.lineSequence()?.filter(String::isNotBlank)?.mapNotNull(String::toLongOrNull)?.toList() ?: emptyList()
 
 private fun String.readResource(): String? = object {}.javaClass.getResource(this).readText()
 
