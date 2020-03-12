@@ -20,33 +20,28 @@ private val logger = LoggerFactory.getLogger("no.nav.helse.SpillAv")
 fun main(args: Array<String>) {
     val env = System.getenv()
 
-    var dryRun = true
-    var starttidspunkt: LocalDateTime? = null
-
     val cliArgs = args.associate {
         val parts = it.split("=", limit = 2)
-        check(parts.size == 2) { "argumenter må angis på formen <key=value>" }
+        check(parts.size == 2) { "argumenter må angis på formen <key>=<value>" }
         parts[0] to parts[1]
     }
 
-    cliArgs["dryRun"]?.also {
-        dryRun = it.toLowerCase() != "false"
-    }
-
-    starttidspunkt = cliArgs.getValue("starttidspunkt").let {
+    val dryRun = cliArgs["dryRun"]?.let { it.toLowerCase() != "false" } ?: true
+    val starttidspunkt = cliArgs.getValue("starttidspunkt").let {
         try {
             LocalDateTime.parse(it)
         } catch (err: DateTimeParseException) {
             LocalDate.parse(it).atStartOfDay()
         }
     }
+    val fraFil = cliArgs["fra-fil"]?.let { it.toLowerCase() == "true" } ?: false
 
     logger.info("args: ${args.toList()}")
-    replay(env, starttidspunkt, dryRun)
+    replay(env, fraFil, starttidspunkt, dryRun)
 }
 
-private fun replay(env: Map<String, String>, starttidspunkt: LocalDateTime, dryRun: Boolean = false) {
-    logger.info("starter replay (dryRun=$dryRun) av alle events fra og med $starttidspunkt")
+private fun replay(env: Map<String, String>, fraFil: Boolean, starttidspunkt: LocalDateTime, dryRun: Boolean = false) {
+    logger.info("starter replay (dryRun=$dryRun, fraFil=$fraFil) av alle events fra og med $starttidspunkt")
 
     val dataSourceBuilder = DataSourceBuilder(env)
     val kafkaConfig = KafkaConfig(
@@ -62,10 +57,15 @@ private fun replay(env: Map<String, String>, starttidspunkt: LocalDateTime, dryR
     val serializer = StringSerializer()
     val producer = KafkaProducer(kafkaConfig.producerConfig(), serializer, serializer)
 
+    val meldinger = if (fraFil) lesMeldingerFraFil() else emptyList()
+
     val antall = using(sessionOf(dataSource)) {
-        it.run(queryOf("SELECT COUNT(1) FROM melding where opprettet >= ?", starttidspunkt).map {
-            it.long(1)
-        }.asSingle) ?: 0
+        val query = if (fraFil) {
+            queryOf("SELECT COUNT(1) FROM melding where opprettet >= ? AND id IN(${meldinger.joinToString(transform = { "?" })})", starttidspunkt, *meldinger.toTypedArray())
+        } else {
+            queryOf("SELECT COUNT(1) FROM melding where opprettet >= ?", starttidspunkt)
+        }
+        it.run(query.map { it.long(1) }.asSingle) ?: 0
     }
 
     logger.info("replayer $antall hendelser")
@@ -76,13 +76,13 @@ private fun replay(env: Map<String, String>, starttidspunkt: LocalDateTime, dryR
 
     using(sessionOf(dataSource)) { session ->
         while (håndtertTotal < antall) {
-            session.forEach(
-                queryOf(
-                    "SELECT * FROM melding where opprettet >= ? ORDER BY opprettet ASC LIMIT 1000 OFFSET ?",
-                    starttidspunkt,
-                    håndtertTotal
-                )
-            ) { row ->
+            val query = if (fraFil) {
+                queryOf("SELECT * FROM melding where opprettet >= ? AND id IN(${meldinger.joinToString(transform = { "?" })}) ORDER BY opprettet ASC LIMIT 1000 OFFSET ?", starttidspunkt, *meldinger.toTypedArray(), håndtertTotal)
+            } else {
+                queryOf("SELECT * FROM melding where opprettet >= ? ORDER BY opprettet ASC LIMIT 1000 OFFSET ?", starttidspunkt, håndtertTotal)
+            }
+
+            session.forEach(query) { row ->
                 håndtertTotal += 1
                 meldingerPerOutputCounter += 1
 
@@ -105,6 +105,10 @@ private fun replay(env: Map<String, String>, starttidspunkt: LocalDateTime, dryR
 
     logger.info("100 % ferdig, $håndtertTotal av $antall håndtert. ${antall - håndtertTotal} gjenstående.")
 }
+
+private fun lesMeldingerFraFil() = "/meldinger.txt".readResource().lineSequence().filter(String::isNotBlank).toList()
+
+private fun String.readResource() = this.javaClass.getResource(this).readText()
 
 private fun String.readFile() =
     try {

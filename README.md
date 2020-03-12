@@ -16,6 +16,8 @@ https://github.com/navikt/helse-spill-av/packages/148909
 5. Følg med på log output: finn podden med `k get pods -n tbd`. Tail slik: `k logs -f -n tbd <pod>`
 6. Start/deploy `spedisjon` når jobben er fullført
 
+Man kan også angi `fra-fil=true` som argument: da vil jobben lese meldingsIDer fra `meldinger.txt`
+
 # Henvendelser
 
 Spørsmål knyttet til koden eller prosjektet kan stilles som issues her på GitHub.
