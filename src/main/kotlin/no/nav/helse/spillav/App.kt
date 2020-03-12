@@ -103,6 +103,8 @@ private fun replay(env: Map<String, String>, fraFil: Boolean, starttidspunkt: Lo
         }
     }
 
+    producer.flush()
+
     logger.info("100 % ferdig, $håndtertTotal av $antall håndtert. ${antall - håndtertTotal} gjenstående.")
 }
 
