@@ -16,7 +16,7 @@ jobs:
       with:
         java-version: '12.x'
     - name: create docker tag
-      run: echo ::set-env name=TAG::$(echo ${{ github.sha }} | cut -c1-7)
+      run: echo "TAG=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_ENV
     - name: test and build
       run: ./gradlew test build
       env:
