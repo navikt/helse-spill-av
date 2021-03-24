@@ -45,11 +45,9 @@ private fun replay(env: Map<String, String>, fraFil: Boolean, starttidspunkt: Lo
 
     val dataSourceBuilder = DataSourceBuilder(env)
     val kafkaConfig = KafkaConfig(
-        bootstrapServers = env.getValue("KAFKA_BOOTSTRAP_SERVERS"),
-        username = "/var/run/secrets/nais.io/service_user/username".readFile(),
-        password = "/var/run/secrets/nais.io/service_user/password".readFile(),
-        truststore = env["NAV_TRUSTSTORE_PATH"],
-        truststorePassword = env["NAV_TRUSTSTORE_PASSWORD"]
+        bootstrapServers = env.getValue("KAFKA_BROKERS"),
+        truststore = env.getValue("NAV_TRUSTSTORE_PATH"),
+        truststorePassword = env.getValue("NAV_TRUSTSTORE_PASSWORD")
     )
 
     val dataSource = dataSourceBuilder.getDataSource(Role.ReadOnly)
