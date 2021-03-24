@@ -8,7 +8,9 @@ import java.util.*
 class KafkaConfig(
     private val bootstrapServers: String,
     private val truststore: String,
-    private val truststorePassword: String
+    private val truststorePassword: String,
+    private val keystoreLocation: String,
+    private val keystorePassword: String
 ) {
     internal fun producerConfig() = kafkaBaseConfig().apply {
         put(ProducerConfig.ACKS_CONFIG, "1")
@@ -24,5 +26,7 @@ class KafkaConfig(
         put(SslConfigs.SSL_ENDPOINT_IDENTIFICATION_ALGORITHM_CONFIG, "")
         put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, truststore)
         put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, truststorePassword)
+        put(SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG, keystoreLocation)
+        put(SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG, keystorePassword)
     }
 }

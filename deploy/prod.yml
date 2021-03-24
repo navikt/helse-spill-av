@@ -22,12 +22,9 @@ spec:
             - mountPath: /var/run/secrets/nais.io/vault
               name: vault-secrets
               subPath: subpath/var/run/secrets/nais.io/vault
-            - mountPath: /var/run/secrets/nais.io/service_user
-              name: vault-secrets
-              subPath: subpath/var/run/secrets/nais.io/service_user
-            - mountPath: /etc/ssl/certs/java/cacerts
-              name: ca-bundle
-              subPath: ca-bundle.jks
+            - mountPath: /var/run/secrets/nais.io/kafka
+              name: kafka-credentials
+              readOnly: true
           args:
             - dryRun=true
             - starttidspunkt=2021-03-24T10:55:00
@@ -44,10 +41,20 @@ spec:
               value: spedisjon
             - name: VAULT_MOUNTPATH
               value: postgresql/prod-fss/
-            - name: NAV_TRUSTSTORE_PATH
-              value: /etc/ssl/certs/java/cacerts
-            - name: NAV_TRUSTSTORE_PASSWORD
-              value: changeme
+            - name: KAFKA_BROKERS
+              valueFrom:
+                secretKeyRef:
+                  key: KAFKA_BROKERS
+                  name: kafka-spill-av-nav-prod-25f9c13a
+            - name: KAFKA_CREDSTORE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: KAFKA_CREDSTORE_PASSWORD
+                  name: kafka-spill-av-nav-prod-25f9c13a
+            - name: KAFKA_KEYSTORE_PATH
+              value: /var/run/secrets/nais.io/kafka/client.keystore.p12
+            - name: KAFKA_TRUSTSTORE_PATH
+              value: /var/run/secrets/nais.io/kafka/client.truststore.jks
       imagePullSecrets:
         - name: gpr-credentials
       initContainers:
@@ -64,16 +71,12 @@ spec:
             - mountPath: /var/run/secrets/nais.io/vault
               name: vault-secrets
               subPath: subpath/var/run/secrets/nais.io/vault
-            - mountPath: /var/run/secrets/nais.io/service_user
-              name: vault-secrets
-              subPath: subpath/var/run/secrets/nais.io/service_user
           args:
             - -v=10
             - -logtostderr
             - -vault=https://vault.adeo.no
             - -one-shot
             - -save-token=/var/run/secrets/nais.io/vault/vault_token
-            - -cn=secret:serviceuser/data/prod/srvspillav:dir=/var/run/secrets/nais.io/service_user,fmt=flatten
           env:
             - name: VAULT_AUTH_METHOD
               value: kubernetes
@@ -87,9 +90,19 @@ spec:
         - name: vault-secrets
           emptyDir:
             medium: Memory
-        - name: ca-bundle
-          configMap:
+        - name: kafka-credentials
+          secret:
             defaultMode: 420
-            name: ca-bundle-jks
+            items:
+              - key: KAFKA_CERTIFICATE
+                path: kafka.crt
+              - key: KAFKA_PRIVATE_KEY
+                path: kafka.key
+              - key: KAFKA_CA
+                path: ca.crt
+              - key: client.keystore.p12
+                path: client.keystore.p12
+              - key: client.truststore.jks
+                path: client.truststore.jks
+            secretName: kafka-spenn-avstemming-nav-prod-2195ff19
       restartPolicy: Never
-

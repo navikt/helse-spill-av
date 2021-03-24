@@ -46,8 +46,10 @@ private fun replay(env: Map<String, String>, fraFil: Boolean, starttidspunkt: Lo
     val dataSourceBuilder = DataSourceBuilder(env)
     val kafkaConfig = KafkaConfig(
         bootstrapServers = env.getValue("KAFKA_BROKERS"),
-        truststore = env.getValue("NAV_TRUSTSTORE_PATH"),
-        truststorePassword = env.getValue("NAV_TRUSTSTORE_PASSWORD")
+        truststore = env.getValue("KAFKA_TRUSTSTORE_PATH"),
+        truststorePassword = env.getValue("KAFKA_CREDSTORE_PASSWORD"),
+        keystoreLocation = env.getValue("KAFKA_KEYSTORE_PASSWORD"),
+        keystorePassword = env.getValue("KAFKA_CREDSTORE_PASSWORD")
     )
 
     val dataSource = dataSourceBuilder.getDataSource(Role.ReadOnly)
