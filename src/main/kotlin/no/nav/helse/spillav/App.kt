@@ -48,7 +48,7 @@ private fun replay(env: Map<String, String>, fraFil: Boolean, starttidspunkt: Lo
         bootstrapServers = env.getValue("KAFKA_BROKERS"),
         truststore = env.getValue("KAFKA_TRUSTSTORE_PATH"),
         truststorePassword = env.getValue("KAFKA_CREDSTORE_PASSWORD"),
-        keystoreLocation = env.getValue("KAFKA_KEYSTORE_PASSWORD"),
+        keystoreLocation = env.getValue("KAFKA_KEYSTORE_PATH"),
         keystorePassword = env.getValue("KAFKA_CREDSTORE_PASSWORD")
     )
 
