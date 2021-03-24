@@ -50,8 +50,6 @@ spec:
               value: /etc/ssl/certs/java/cacerts
             - name: NAV_TRUSTSTORE_PASSWORD
               value: changeme
-      kafka:
-        pool: nav-dev
       imagePullSecrets:
         - name: gpr-credentials
       initContainers:

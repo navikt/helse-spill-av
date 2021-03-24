@@ -10,7 +10,7 @@ spec:
     spec:
       containers:
         - name: spill-av
-          image: "docker.pkg.github.com/navikt/helse-spill-av/spill-av:{{version}}"
+          image: "docker.pkg.github.com/navikt/helse-spill-av/spill-av:5758cab"
           resources:
             requests:
               memory: 256Mi
@@ -30,7 +30,7 @@ spec:
               subPath: ca-bundle.jks
           args:
             - dryRun=true
-            - starttidspunkt=2020-01-01
+            - starttidspunkt=2021-03-24T10:55:00
           env:
             - name: VAULT_TOKEN_PATH
               value: /var/run/secrets/nais.io/vault/vault_token
@@ -48,8 +48,6 @@ spec:
               value: /etc/ssl/certs/java/cacerts
             - name: NAV_TRUSTSTORE_PASSWORD
               value: changeme
-      kafka:
-        pool: nav-prod
       imagePullSecrets:
         - name: gpr-credentials
       initContainers:
