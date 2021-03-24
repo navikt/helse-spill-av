@@ -10,7 +10,7 @@ spec:
     spec:
       containers:
         - name: spill-av
-          image: "docker.pkg.github.com/navikt/helse-spill-av/spill-av:5758cab"
+          image: "docker.pkg.github.com/navikt/helse-spill-av/spill-av:{{version}}"
           resources:
             requests:
               memory: 256Mi
