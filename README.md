@@ -1,7 +1,7 @@
 spill-av [![Actions Status](https://github.com/navikt/helse-spill-av/workflows/master/badge.svg)](https://github.com/navikt/helse-spill-av/actions)
 =============
 
-Replayer events for sykepenger.
+Leser meldinger fra databasen til spedisjon og produserer dem til en topic, konfigurert med `KAFKA_TARGET_TOPIC`.
 
 # Kjøring
 

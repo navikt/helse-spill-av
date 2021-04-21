@@ -88,7 +88,7 @@ private fun replay(env: Map<String, String>, fraFil: Boolean, starttidspunkt: Lo
 
                 if (!dryRun) producer.send(
                     ProducerRecord(
-                        env.getValue("KAFKA_RAPID_TOPIC"),
+                        env.getValue("KAFKA_TARGET_TOPIC"),
                         row.string("fnr"),
                         row.string("data")
                     )
