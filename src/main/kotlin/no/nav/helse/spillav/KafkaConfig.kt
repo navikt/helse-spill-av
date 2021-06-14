@@ -17,7 +17,7 @@ class KafkaConfig(
         put(ProducerConfig.CLIENT_ID_CONFIG, "spill-av-v1")
         put(ProducerConfig.LINGER_MS_CONFIG, "5")
         put(ProducerConfig.RETRIES_CONFIG, Int.MAX_VALUE)
-        put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, "1")
+        put(ProducerConfig.MAX_IN_FLIGHT_REQUESTS_PER_CONNECTION, "10")
     }
 
     private fun kafkaBaseConfig() = Properties().apply {
