@@ -72,7 +72,7 @@ private fun replay(env: Map<String, String>, fraFil: Boolean, starttidspunkt: Lo
 
     var håndtertTotal = 0L
     var meldingerPerOutputCounter = 0L
-    val meldingerPerOutput = antall / 50 // skriv fremdrift ca. 50 ganger, ca. hvert 2 %
+    val meldingerPerOutput = antall / 800 // skriv fremdrift ca. 800 ganger, ca. hvert 0.25 %
 
     using(sessionOf(dataSource)) { session ->
         while (håndtertTotal < antall) {
