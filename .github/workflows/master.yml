@@ -5,7 +5,7 @@ on:
     branches:
     - master
 env:
-  IMAGE: docker.pkg.github.com/${{ github.repository }}/spill-av
+  IMAGE: ghcr.io/${{ github.repository }}/spill-av
 
 jobs:
   build:
@@ -26,7 +26,7 @@ jobs:
       run: docker build . --pull -t ${{ env.IMAGE }}:${{ env.TAG }}
     - name: push docker image
       run: |
-        echo "$GITHUB_TOKEN" | docker login --username "$GITHUB_REPOSITORY" --password-stdin https://docker.pkg.github.com
+        echo "$GITHUB_TOKEN" | docker login --username "$GITHUB_REPOSITORY" --password-stdin ghcr.io
         docker push ${{ env.IMAGE }}:${{ env.TAG }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
